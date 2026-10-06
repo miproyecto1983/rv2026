@@ -1,4 +1,19 @@
 const STORAGE_KEY = "rvTracker2026Pro";
+const VISITOR_KEY = "rvTracker2026VisitorId";
+
+/* =========================================================
+   SUPABASE - ESTADÍSTICAS ANÓNIMAS
+========================================================= */
+
+const SUPABASE_URL = "https://uhxqqmloawuhdvcuzriw.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_9Ehyv45M-As64YTSw2ih5Q_D-uUwUuC";
+
+
+/* =========================================================
+   OBJETIVOS Y RETRIBUCIÓN
+========================================================= */
 
 const GOALS = {
   op1: { target: 0, weight: 0.50 },
@@ -13,8 +28,6 @@ const AP100 = 1348.70;
 
 const $ = id => document.getElementById(id);
 
-const numberValue = element => Number(element.value);
-
 const euro = value => value.toLocaleString("es-ES", {
   style: "currency",
   currency: "EUR"
@@ -23,19 +36,163 @@ const euro = value => value.toLocaleString("es-ES", {
 const pct = value =>
   `${value.toFixed(1).replace(".", ",")}%`;
 
-
 let savedTarget = 0;
 let lastSavedAt = null;
 let messageTimer = null;
 
 
 /* =========================================================
+   ESTADÍSTICAS
+========================================================= */
+
+function getVisitorId() {
+
+  let visitorId =
+    localStorage.getItem(VISITOR_KEY);
+
+  if (!visitorId) {
+
+    if (
+      window.crypto &&
+      typeof window.crypto.randomUUID === "function"
+    ) {
+      visitorId = crypto.randomUUID();
+    } else {
+      visitorId =
+        "rv-" +
+        Date.now() +
+        "-" +
+        Math.random().toString(36).substring(2);
+    }
+
+    localStorage.setItem(
+      VISITOR_KEY,
+      visitorId
+    );
+  }
+
+  return visitorId;
+}
+
+
+function getDeviceType() {
+
+  const ua =
+    navigator.userAgent.toLowerCase();
+
+  if (
+    /ipad|tablet/.test(ua)
+  ) {
+    return "tablet";
+  }
+
+  if (
+    /mobile|iphone|android/.test(ua)
+  ) {
+    return "mobile";
+  }
+
+  return "desktop";
+}
+
+
+async function sendAnalytics(
+  table,
+  data
+) {
+
+  try {
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/${table}`,
+      {
+        method: "POST",
+
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization":
+            `Bearer ${SUPABASE_KEY}`,
+          "Content-Type":
+            "application/json",
+          "Prefer":
+            "return=minimal"
+        },
+
+        body: JSON.stringify(data),
+
+        keepalive: true
+      }
+    );
+
+
+    if (!response.ok) {
+
+      console.warn(
+        "No se pudo registrar la estadística:",
+        table,
+        response.status
+      );
+
+    }
+
+  } catch (error) {
+
+    /*
+     * Si falla Supabase, RV Tracker continúa
+     * funcionando normalmente.
+     */
+
+    console.warn(
+      "Estadísticas no disponibles:",
+      error
+    );
+
+  }
+}
+
+
+function registerVisit() {
+
+  sendAnalytics(
+    "rv_visits",
+    {
+      visitor_id: getVisitorId(),
+      device_type: getDeviceType()
+    }
+  );
+
+}
+
+
+function registerEvent(
+  eventName
+) {
+
+  sendAnalytics(
+    "rv_events",
+    {
+      visitor_id: getVisitorId(),
+      event_name: eventName
+    }
+  );
+
+}
+
+
+/* =========================================================
    CÁLCULOS
 ========================================================= */
 
-function achievement(actual, target, cap = 130) {
+function achievement(
+  actual,
+  target,
+  cap = 130
+) {
 
-  if (!Number.isFinite(target) || target <= 0) {
+  if (
+    !Number.isFinite(target) ||
+    target <= 0
+  ) {
     return 0;
   }
 
@@ -46,31 +203,44 @@ function achievement(actual, target, cap = 130) {
 }
 
 
-function calculateRvOp(opPercent) {
+function calculateRvOp(
+  opPercent
+) {
 
   if (opPercent < 70) {
     return 0;
   }
 
+
   if (opPercent <= 100) {
 
     return (
       0.4 * RVOP100
-      + ((opPercent - 70) *
-        (0.6 * RVOP100) / 30)
+      +
+      (
+        (opPercent - 70) *
+        (0.6 * RVOP100) /
+        30
+      )
     );
 
   }
+
 
   if (opPercent <= 130) {
 
     return (
       RVOP100
-      + ((opPercent - 100) *
-        (0.3 * RVOP100) / 30)
+      +
+      (
+        (opPercent - 100) *
+        (0.3 * RVOP100) /
+        30
+      )
     );
 
   }
+
 
   return RVOPMAX;
 }
@@ -84,25 +254,36 @@ function calculateGlobal(
 ) {
 
   return (
-    achievement(op1, targetOp1)
-      * GOALS.op1.weight
+    achievement(
+      op1,
+      targetOp1
+    ) *
+    GOALS.op1.weight
 
-    + achievement(op2, GOALS.op2.target)
-      * GOALS.op2.weight
+    +
 
-    + achievement(
-        op3,
-        GOALS.op3.target,
-        GOALS.op3.cap
-      )
-      * GOALS.op3.weight
+    achievement(
+      op2,
+      GOALS.op2.target
+    ) *
+    GOALS.op2.weight
+
+    +
+
+    achievement(
+      op3,
+      GOALS.op3.target,
+      GOALS.op3.cap
+    ) *
+    GOALS.op3.weight
   );
 }
 
 
 function remainingDays() {
 
-  const now = new Date();
+  const now =
+    new Date();
 
   const end =
     new Date(
@@ -117,7 +298,8 @@ function remainingDays() {
   return Math.max(
     1,
     Math.ceil(
-      (end - now) / 86400000
+      (end - now) /
+      86400000
     )
   );
 }
@@ -130,8 +312,8 @@ function missingAmount(
 ) {
 
   if (
-    !Number.isFinite(target)
-    || target <= 0
+    !Number.isFinite(target) ||
+    target <= 0
   ) {
     return 0;
   }
@@ -154,19 +336,19 @@ function missingAmount(
 function getCurrentTargetForCalculations() {
 
   const raw =
-    $("op1TargetEdit").value.trim();
+    $("op1TargetEdit")
+      .value
+      .trim();
 
   const candidate =
     Number(raw);
 
   if (
-    raw !== ""
-    && Number.isFinite(candidate)
-    && candidate > 0
+    raw !== "" &&
+    Number.isFinite(candidate) &&
+    candidate > 0
   ) {
-
     return candidate;
-
   }
 
   return savedTarget;
@@ -174,7 +356,7 @@ function getCurrentTargetForCalculations() {
 
 
 /* =========================================================
-   ALMACENAMIENTO LOCAL
+   DATOS GUARDADOS EN EL NAVEGADOR
 ========================================================= */
 
 function readStoredData() {
@@ -188,6 +370,7 @@ function readStoredData() {
     return null;
   }
 
+
   try {
 
     return JSON.parse(raw);
@@ -200,7 +383,6 @@ function readStoredData() {
     );
 
     return null;
-
   }
 }
 
@@ -210,9 +392,9 @@ function loadData() {
   const data =
     readStoredData();
 
+
   /*
-   * Usuario nuevo.
-   * Todo empieza a cero.
+   * USUARIO NUEVO
    */
 
   if (!data) {
@@ -224,22 +406,24 @@ function loadData() {
     $("op3Actual").value = "0";
     $("op2Actual").value = "";
 
-    $("nedgiaPendiente").checked = true;
+    $("nedgiaPendiente").checked =
+      true;
 
     return;
   }
 
 
   /*
-   * Usuario que ya había guardado datos.
+   * USUARIO CON DATOS GUARDADOS
    */
 
   const target =
     Number(data.op1Target);
 
+
   if (
-    Number.isFinite(target)
-    && target > 0
+    Number.isFinite(target) &&
+    target > 0
   ) {
 
     savedTarget = target;
@@ -258,26 +442,20 @@ function loadData() {
 
 
   if (data.op1 !== undefined) {
-
     $("op1Actual").value =
       data.op1;
-
   }
 
 
   if (data.op2 !== undefined) {
-
     $("op2Actual").value =
       data.op2;
-
   }
 
 
   if (data.op3 !== undefined) {
-
     $("op3Actual").value =
       data.op3;
-
   }
 
 
@@ -299,9 +477,7 @@ function loadData() {
         date.getTime()
       )
     ) {
-
       lastSavedAt = date;
-
     }
 
   }
@@ -327,8 +503,10 @@ function showMessage(
     messageTimer
   );
 
+
   message.textContent =
     text;
+
 
   message.classList.toggle(
     "error",
@@ -349,22 +527,26 @@ function showMessage(
 
 
   messageTimer =
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      message.textContent = "";
+        message.textContent =
+          "";
 
-      message.classList.remove(
-        "error"
-      );
+        message.classList.remove(
+          "error"
+        );
 
-      button.textContent =
-        "Guardar datos";
+        button.textContent =
+          "Guardar datos";
 
-      button.classList.remove(
-        "saved"
-      );
+        button.classList.remove(
+          "saved"
+        );
 
-    }, 2800);
+      },
+      2800
+    );
 }
 
 
@@ -383,20 +565,16 @@ function validateBeforeSave() {
   const target =
     Number(rawTarget);
 
+
   targetInput.classList.remove(
     "invalid"
   );
 
 
-  /*
-   * El objetivo OP1 tiene que introducirlo
-   * cada usuario.
-   */
-
   if (
-    rawTarget === ""
-    || !Number.isFinite(target)
-    || target <= 0
+    rawTarget === "" ||
+    !Number.isFinite(target) ||
+    target <= 0
   ) {
 
     targetInput.classList.add(
@@ -451,14 +629,15 @@ function validateBeforeSave() {
         .checked,
 
     savedAt:
-      new Date().toISOString()
+      new Date()
+        .toISOString()
 
   };
 }
 
 
 /* =========================================================
-   GUARDAR
+   GUARDAR DATOS
 ========================================================= */
 
 function saveData() {
@@ -473,6 +652,12 @@ function saveData() {
 
   try {
 
+    /*
+     * IMPORTANTE:
+     * Los datos profesionales se guardan
+     * SOLO en el navegador.
+     */
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(data)
@@ -482,8 +667,11 @@ function saveData() {
     savedTarget =
       data.op1Target;
 
+
     lastSavedAt =
-      new Date(data.savedAt);
+      new Date(
+        data.savedAt
+      );
 
 
     $("op1TargetEdit")
@@ -494,8 +682,10 @@ function saveData() {
     $("simOp1").value =
       data.op1;
 
+
     $("simOp3").value =
       data.op3;
+
 
     $("simOp2").value =
       data.op2 === ""
@@ -509,6 +699,17 @@ function saveData() {
     showMessage(
       "✓ Datos guardados correctamente"
     );
+
+
+    /*
+     * A Supabase SOLO enviamos
+     * que se ha pulsado Guardar.
+     */
+
+    registerEvent(
+      "save_data"
+    );
+
 
   } catch (error) {
 
@@ -633,8 +834,8 @@ function renderDashboard() {
 
 
   const hasTarget =
-    Number.isFinite(targetOp1)
-    && targetOp1 > 0;
+    Number.isFinite(targetOp1) &&
+    targetOp1 > 0;
 
 
   const p1 =
@@ -669,7 +870,9 @@ function renderDashboard() {
       ? (
           p1 *
           GOALS.op1.weight
+
           +
+
           p3 *
           GOALS.op3.weight
         )
@@ -682,15 +885,12 @@ function renderDashboard() {
         );
 
 
-  /*
-   * Tabla objetivos
-   */
-
   $("op1TargetNow").textContent =
     hasTarget
-      ? targetOp1.toLocaleString(
-          "es-ES"
-        )
+      ? targetOp1
+          .toLocaleString(
+            "es-ES"
+          )
       : "0";
 
 
@@ -730,10 +930,6 @@ function renderDashboard() {
     pct(p3);
 
 
-  /*
-   * Barras
-   */
-
   $("op1Fill").style.width =
     hasTarget
       ? `${Math.min(
@@ -759,10 +955,6 @@ function renderDashboard() {
     )}%`;
 
 
-  /*
-   * Cumplimiento global
-   */
-
   $("opGlobalCard").textContent =
     pct(globalPercent);
 
@@ -785,14 +977,12 @@ function renderDashboard() {
 
   $("globalMarker").style.left =
     `${Math.min(
-      globalPercent / 130 * 100,
+      globalPercent /
+      130 *
+      100,
       98
     )}%`;
 
-
-  /*
-   * Mensaje progreso
-   */
 
   if (!hasTarget) {
 
@@ -824,10 +1014,6 @@ function renderDashboard() {
 
   }
 
-
-  /*
-   * Variable OP
-   */
 
   if (pending) {
 
@@ -863,10 +1049,6 @@ function renderDashboard() {
   }
 
 
-  /*
-   * Ritmo
-   */
-
   const days =
     remainingDays();
 
@@ -883,7 +1065,8 @@ function renderDashboard() {
           100,
           op1,
           targetOp1
-        ) / days
+        ) /
+        days
       )
         .toFixed(2)
         .replace(".", ",");
@@ -895,7 +1078,8 @@ function renderDashboard() {
           130,
           op1,
           targetOp1
-        ) / days
+        ) /
+        days
       )
         .toFixed(2)
         .replace(".", ",");
@@ -910,10 +1094,6 @@ function renderDashboard() {
 
   }
 
-
-  /*
-   * Hitos
-   */
 
   if (!hasTarget) {
 
@@ -966,7 +1146,7 @@ function renderDashboard() {
 
 
 /* =========================================================
-   ESCENARIOS
+   ESCENARIOS NEDGIA
 ========================================================= */
 
 function renderScenarios(
@@ -984,34 +1164,32 @@ function renderScenarios(
 
 
   const hasTarget =
-    Number.isFinite(targetOp1)
-    && targetOp1 > 0;
+    Number.isFinite(targetOp1) &&
+    targetOp1 > 0;
 
-
-  /*
-   * Mientras el usuario no indique
-   * su objetivo OP1 no mostramos
-   * escenarios engañosos.
-   */
 
   if (!hasTarget) {
 
     $("scenarios").innerHTML =
-      `<div class="scenario">
+      `
+      <div class="scenario">
         <div>
           <b>Introduce tu objetivo OP1</b>
           <small>
             Los escenarios aparecerán automáticamente.
           </small>
         </div>
-      </div>`;
+      </div>
+      `;
 
 
     $("totalScenarios").innerHTML =
-      `<div>
+      `
+      <div>
         <span>Pendiente</span>
         <strong>-- €</strong>
-      </div>`;
+      </div>
+      `;
 
     return;
   }
@@ -1022,9 +1200,9 @@ function renderScenarios(
       ([name, nedgiaPercent]) => {
 
         const op2 =
-          GOALS.op2.target
-          * nedgiaPercent
-          / 100;
+          GOALS.op2.target *
+          nedgiaPercent /
+          100;
 
 
         const globalPercent =
@@ -1080,9 +1258,9 @@ function renderScenarios(
       ([name, nedgiaPercent]) => {
 
         const op2 =
-          GOALS.op2.target
-          * nedgiaPercent
-          / 100;
+          GOALS.op2.target *
+          nedgiaPercent /
+          100;
 
 
         const globalPercent =
@@ -1098,8 +1276,10 @@ function renderScenarios(
           calculateRvOp(
             globalPercent
           )
-          + RVOUS100
-          + AP100;
+          +
+          RVOUS100
+          +
+          AP100;
 
 
         return `
@@ -1145,8 +1325,8 @@ function renderSimulator() {
 
 
   if (
-    !Number.isFinite(targetOp1)
-    || targetOp1 <= 0
+    !Number.isFinite(targetOp1) ||
+    targetOp1 <= 0
   ) {
 
     $("simPct").textContent =
@@ -1188,9 +1368,7 @@ function renderSimulator() {
 function renderAll() {
 
   renderDashboard();
-
   renderSimulator();
-
   renderDate();
 
 }
@@ -1222,12 +1400,15 @@ function bindEvents() {
       () => {
 
         if (
-          id === "op1TargetEdit"
+          id ===
+          "op1TargetEdit"
         ) {
 
           $(id)
             .classList
-            .remove("invalid");
+            .remove(
+              "invalid"
+            );
 
         }
 
@@ -1261,6 +1442,20 @@ function bindEvents() {
 
 function init() {
 
+  /*
+   * Registramos una visita.
+   * No esperamos la respuesta para
+   * que la web cargue inmediatamente.
+   */
+
+  registerVisit();
+
+
+  /*
+   * Recuperamos los datos privados
+   * del usuario desde SU navegador.
+   */
+
   loadData();
 
 
@@ -1273,7 +1468,8 @@ function init() {
 
 
   $("simOp2").value =
-    $("op2Actual").value || 6500;
+    $("op2Actual").value ||
+    6500;
 
 
   bindEvents();
