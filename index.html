@@ -6,8 +6,10 @@
   <title>RV Tracker 2026</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
+
 <body>
   <div class="layout">
+
     <aside class="sidebar">
       <div class="logo">
         <div class="rv">RV</div>
@@ -25,7 +27,10 @@
 
       <div class="accelerator">
         <strong>★ ACELERADOR</strong>
-        <p>Si incorporas 6 o más empresas instaladoras que capten al menos 1 cliente en 2026, sumas <b>+5 p.p.</b> a tus Objetivos Propios.</p>
+        <p>
+          Si incorporas 6 o más empresas instaladoras que capten al menos
+          1 cliente en 2026, sumas <b>+5 p.p.</b> a tus Objetivos Propios.
+        </p>
       </div>
 
       <div class="updated">
@@ -35,176 +40,451 @@
       </div>
     </aside>
 
+
     <main class="main">
+
+      <!-- CABECERA -->
       <header class="top">
         <div>
           <h1>Dashboard</h1>
           <p>Visión general de tu evolución y retribución variable 2026</p>
         </div>
+
         <div class="date-card">
           <strong id="todayText"></strong>
           <span id="yearProgress"></span>
         </div>
       </header>
 
+
+      <!-- ACTUALIZAR DATOS - AHORA ARRIBA -->
+      <article class="panel">
+        <h2>Actualizar datos</h2>
+
+        <div class="inputs inputs-four">
+
+          <label>
+            Objetivo OP1
+            <input
+              id="op1TargetEdit"
+              type="number"
+              min="1"
+              value="0"
+            >
+          </label>
+
+          <label>
+            Precaptaciones propias
+            <input
+              id="op1Actual"
+              type="number"
+              min="0"
+              value="0"
+            >
+          </label>
+
+          <label>
+            Visitas
+            <input
+              id="op3Actual"
+              type="number"
+              min="0"
+              value="0"
+            >
+          </label>
+
+          <label>
+            Total Nedgia
+            <input
+              id="op2Actual"
+              type="number"
+              min="0"
+              placeholder="Sin dato"
+            >
+          </label>
+
+        </div>
+
+        <label class="check">
+          <input
+            id="nedgiaPendiente"
+            type="checkbox"
+            checked
+          >
+          Nedgia pendiente: simular escenarios
+        </label>
+
+        <div class="save-row">
+          <button id="saveBtn" type="button">
+            Guardar datos
+          </button>
+
+          <span
+            id="saveMessage"
+            class="save-message"
+            aria-live="polite"
+          ></span>
+        </div>
+      </article>
+
+
+      <!-- TARJETAS PRINCIPALES -->
       <section class="cards">
+
         <article class="card big-number">
           <span>CUMPLIMIENTO GLOBAL OP</span>
           <strong id="opGlobalCard">0%</strong>
           <p id="opGlobalSub">Orientativo</p>
-          <small id="opGlobalPending">Pendiente: dato Nedgia</small>
+          <small id="opGlobalPending">
+            Pendiente: dato Nedgia
+          </small>
         </article>
 
         <article class="card big-number">
           <span>VARIABLE ESTIMADA OP</span>
           <strong id="rvOp">----- €</strong>
-          <p id="rvStatus">Pendiente de dato Nedgia</p>
+          <p id="rvStatus">
+            Pendiente de dato Nedgia
+          </p>
         </article>
 
         <article class="card status-card">
           <span>ESTADO GENERAL</span>
-          <strong id="statusBadge">EN PROGRESO</strong>
-          <p id="statusText">Sigue así, cada día te acercas más a tu objetivo.</p>
+          <strong id="statusBadge">
+            EN PROGRESO
+          </strong>
+          <p id="statusText">
+            Introduce tus datos para calcular tu evolución.
+          </p>
         </article>
+
       </section>
 
+
       <section class="content">
+
         <div class="left">
+
+          <!-- OBJETIVOS -->
           <article class="panel">
+
             <h2>Tus objetivos propios</h2>
+
             <div class="objectives">
+
               <div class="row header">
-                <span>Concepto</span><span>Peso</span><span>Objetivo</span><span>Actual</span><span>Cumplimiento</span>
+                <span>Concepto</span>
+                <span>Peso</span>
+                <span>Objetivo</span>
+                <span>Actual</span>
+                <span>Cumplimiento</span>
               </div>
 
+
+              <!-- OP1 -->
               <div class="row">
-                <div><b>OP1</b><small>Precaptaciones propias</small></div>
+
+                <div>
+                  <b>OP1</b>
+                  <small>Precaptaciones propias</small>
+                </div>
+
                 <span>50%</span>
-                <span id="op1TargetNow">550</span>
-                <strong id="op1Now">289</strong>
-                <div><b id="op1Pct">0%</b><div class="mini-bar"><i id="op1Fill"></i></div></div>
+
+                <span id="op1TargetNow">0</span>
+
+                <strong id="op1Now">0</strong>
+
+                <div>
+                  <b id="op1Pct">0%</b>
+
+                  <div class="mini-bar">
+                    <i id="op1Fill"></i>
+                  </div>
+                </div>
+
               </div>
 
+
+              <!-- OP2 -->
               <div class="row">
-                <div><b>OP2</b><small>Precaptaciones Nedgia</small></div>
+
+                <div>
+                  <b>OP2</b>
+                  <small>Precaptaciones Nedgia</small>
+                </div>
+
                 <span>35%</span>
+
                 <span>6.500</span>
+
                 <strong id="op2Now">--</strong>
-                <div><b id="op2Pct">--</b><div class="mini-bar"><i id="op2Fill"></i></div></div>
+
+                <div>
+                  <b id="op2Pct">--</b>
+
+                  <div class="mini-bar">
+                    <i id="op2Fill"></i>
+                  </div>
+                </div>
+
               </div>
 
+
+              <!-- OP3 -->
               <div class="row">
-                <div><b>OP3</b><small>Visitas</small></div>
+
+                <div>
+                  <b>OP3</b>
+                  <small>Visitas</small>
+                </div>
+
                 <span>15%</span>
+
                 <span>175</span>
-                <strong id="op3Now">22</strong>
-                <div><b id="op3Pct">0%</b><div class="mini-bar purple"><i id="op3Fill"></i></div></div>
+
+                <strong id="op3Now">0</strong>
+
+                <div>
+                  <b id="op3Pct">0%</b>
+
+                  <div class="mini-bar purple">
+                    <i id="op3Fill"></i>
+                  </div>
+                </div>
+
               </div>
+
             </div>
-            <div class="formula">ⓘ Cumplimiento OP = OP1 × 50% + OP2 × 35% + OP3 × 15%</div>
+
+            <div class="formula">
+              ⓘ Cumplimiento OP =
+              OP1 × 50% + OP2 × 35% + OP3 × 15%
+            </div>
+
           </article>
 
+
+          <!-- PROGRESO + RITMO -->
           <section class="two">
-            <article class="panel">
-              <h2>Progreso global OP</h2>
-              <div class="range">
-                <span>0%</span><span>70%</span><span>100%</span><span>130%</span>
-                <div class="range-bar"><i id="globalMarker"></i></div>
-              </div>
-              <strong class="huge" id="globalHuge">0%</strong>
-              <p id="globalHelp">Estás avanzando hacia el umbral mínimo.</p>
-            </article>
 
             <article class="panel">
-              <h2>Ritmo necesario OP1</h2>
-              <div class="rhythm">
-                <div><span>Para llegar al 100%</span><strong id="daily100">0</strong><small>captaciones/día</small></div>
-                <div><span>Para llegar al 130%</span><strong id="daily130">0</strong><small>captaciones/día</small></div>
+
+              <h2>Progreso global OP</h2>
+
+              <div class="range">
+                <span>0%</span>
+                <span>70%</span>
+                <span>100%</span>
+                <span>130%</span>
+
+                <div class="range-bar">
+                  <i id="globalMarker"></i>
+                </div>
               </div>
-              <p id="daysLeft"></p>
+
+              <strong
+                class="huge"
+                id="globalHuge"
+              >
+                0%
+              </strong>
+
+              <p id="globalHelp">
+                Introduce tus datos para comenzar.
+              </p>
+
             </article>
+
+
+            <article class="panel">
+
+              <h2>Ritmo necesario OP1</h2>
+
+              <div class="rhythm">
+
+                <div>
+                  <span>Para llegar al 100%</span>
+                  <strong id="daily100">0</strong>
+                  <small>captaciones/día</small>
+                </div>
+
+                <div>
+                  <span>Para llegar al 130%</span>
+                  <strong id="daily130">0</strong>
+                  <small>captaciones/día</small>
+                </div>
+
+              </div>
+
+              <p id="daysLeft"></p>
+
+            </article>
+
           </section>
 
+
+          <!-- HITOS -->
           <article class="panel">
+
             <h2>Próximos hitos importantes</h2>
+
             <div class="milestones">
-              <div><b>70%</b><span>Umbral mínimo</span><strong id="miss70">--</strong></div>
-              <div><b>100%</b><span>Objetivo 100%</span><strong id="miss100">--</strong></div>
-              <div><b>130%</b><span>Objetivo máximo</span><strong id="miss130">--</strong></div>
+
+              <div>
+                <b>70%</b>
+                <span>Umbral mínimo</span>
+                <strong id="miss70">--</strong>
+              </div>
+
+              <div>
+                <b>100%</b>
+                <span>Objetivo 100%</span>
+                <strong id="miss100">--</strong>
+              </div>
+
+              <div>
+                <b>130%</b>
+                <span>Objetivo máximo</span>
+                <strong id="miss130">--</strong>
+              </div>
+
             </div>
+
           </article>
 
-          <article class="panel">
-            <h2>Actualizar datos</h2>
-            <div class="inputs inputs-four">
-              <label>Objetivo OP1
-                <input id="op1TargetEdit" type="number" min="1" value="550">
-              </label>
-              <label>Precaptaciones propias
-                <input id="op1Actual" type="number" min="0" value="289">
-              </label>
-              <label>Visitas
-                <input id="op3Actual" type="number" min="0" value="22">
-              </label>
-              <label>Total Nedgia
-                <input id="op2Actual" type="number" min="0" placeholder="Sin dato">
-              </label>
-            </div>
-
-            <label class="check">
-              <input id="nedgiaPendiente" type="checkbox" checked>
-              Nedgia pendiente: simular escenarios
-            </label>
-
-            <div class="save-row">
-              <button id="saveBtn" type="button">Guardar datos</button>
-              <span id="saveMessage" class="save-message" aria-live="polite"></span>
-            </div>
-          </article>
         </div>
 
+
+        <!-- COLUMNA DERECHA -->
         <aside class="right">
+
+          <!-- RESUMEN RV -->
           <article class="panel">
+
             <h2>Resumen retribución variable</h2>
+
             <div class="max-money">
               <span>Máxima posible 130%</span>
               <strong>17.533,10 €</strong>
             </div>
+
             <div class="breakdown">
-              <p><span class="dot green"></span>Objetivos Propios <b>12.273,17 €</b></p>
-              <p><span class="dot blue"></span>Unidad Superior <b>3.506,62 €</b></p>
-              <p><span class="dot purple-dot"></span>Actuación Profesional <b>1.753,31 €</b></p>
+
+              <p>
+                <span class="dot green"></span>
+                Objetivos Propios
+                <b>12.273,17 €</b>
+              </p>
+
+              <p>
+                <span class="dot blue"></span>
+                Unidad Superior
+                <b>3.506,62 €</b>
+              </p>
+
+              <p>
+                <span class="dot purple-dot"></span>
+                Actuación Profesional
+                <b>1.753,31 €</b>
+              </p>
+
             </div>
+
           </article>
 
+
+          <!-- ESCENARIOS NEDGIA -->
           <article class="panel">
+
             <h2>Escenarios dato Nedgia</h2>
-            <div id="scenarios" class="scenario-list"></div>
+
+            <div
+              id="scenarios"
+              class="scenario-list"
+            ></div>
+
           </article>
 
+
+          <!-- VARIABLE TOTAL -->
           <article class="panel dark">
+
             <h2>Variable estimada total</h2>
-            <div id="totalScenarios" class="total-grid"></div>
-            <p>Cálculo orientativo. OUS y AP estimados al 100%.</p>
+
+            <div
+              id="totalScenarios"
+              class="total-grid"
+            ></div>
+
+            <p>
+              Cálculo orientativo.
+              OUS y AP estimados al 100%.
+            </p>
+
           </article>
 
+
+          <!-- SIMULADOR -->
           <article class="panel">
+
             <h2>Simulador rápido</h2>
+
             <div class="inputs one">
-              <label>Precaptaciones simuladas<input id="simOp1" type="number" min="0" value="289"></label>
-              <label>Visitas simuladas<input id="simOp3" type="number" min="0" value="22"></label>
-              <label>Nedgia simulada<input id="simOp2" type="number" min="0" value="6500"></label>
+
+              <label>
+                Precaptaciones simuladas
+                <input
+                  id="simOp1"
+                  type="number"
+                  min="0"
+                  value="0"
+                >
+              </label>
+
+              <label>
+                Visitas simuladas
+                <input
+                  id="simOp3"
+                  type="number"
+                  min="0"
+                  value="0"
+                >
+              </label>
+
+              <label>
+                Nedgia simulada
+                <input
+                  id="simOp2"
+                  type="number"
+                  min="0"
+                  value="6500"
+                >
+              </label>
+
             </div>
+
             <div class="sim-result">
-              <span>OP simulado</span><strong id="simPct">0%</strong>
-              <span>RV OP</span><strong id="simRv">0 €</strong>
+
+              <span>OP simulado</span>
+              <strong id="simPct">0%</strong>
+
+              <span>RV OP</span>
+              <strong id="simRv">0 €</strong>
+
             </div>
+
           </article>
+
         </aside>
+
       </section>
+
     </main>
+
   </div>
 
   <script src="app.js"></script>
+
 </body>
 </html>
