@@ -819,10 +819,9 @@ async function loadStats() {
   dashboard.classList.add("hidden");
 
   const { data, error } =
-    await supabaseClient
-      .from("rv_stats")
-      .select("*")
-      .single();
+  await supabaseClient
+    .rpc("get_rv_stats")
+    .single();
 
 
   if (error) {
